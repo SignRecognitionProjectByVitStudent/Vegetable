@@ -17,8 +17,6 @@
         const URL = "https://raw.githubusercontent.com/SignRecognitionProjectByVitStudent/Vegetable/main/";
 
         let model, webcam, ctx, labelContainer, maxPredictions;
-        let highestPrediction = null;
-        const displayInterval = 10000; // 10 seconds
 
         async function init() {
             const modelURL = URL + "model.json";
@@ -44,8 +42,6 @@
             for (let i = 0; i < maxPredictions; i++) { // and class labels
                 labelContainer.appendChild(document.createElement("div"));
             }
-
-            setInterval(displayResults, displayInterval); // Update display every 10 seconds
         }
 
         async function loop(timestamp) {
@@ -60,23 +56,14 @@
             // Prediction 2: run input through teachable machine classification model
             const prediction = await model.predict(posenetOutput);
 
-            // Find the highest probability prediction
-            const highest = prediction.reduce((prev, current) => (prev.probability > current.probability) ? prev : current);
-            if (!highestPrediction || highest.probability > highestPrediction.probability) {
-                highestPrediction = highest;
+            for (let i = 0; i < maxPredictions; i++) {
+                const classPrediction =
+                    prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+                labelContainer.childNodes[i].innerHTML = classPrediction;
             }
 
             // finally draw the poses
             drawPose(pose);
-        }
-
-        function displayResults() {
-            if (highestPrediction) {
-                const classPrediction =
-                    highestPrediction.className + ": " + highestPrediction.probability.toFixed(2);
-                labelContainer.childNodes[0].innerHTML = classPrediction;
-                highestPrediction = null; // Reset for the next interval
-            }
         }
 
         function drawPose(pose) {
